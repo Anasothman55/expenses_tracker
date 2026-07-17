@@ -1,0 +1,30 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+migrations
+.env
+# IDE and editor files
+.idea/
+.vscode/
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Logs and temporary files
+*.log
+# Coverage reports
+.coverage
+# Test output
+nosetests.xml
+
+#alembic
+migrations/
+alembic.ini
+
+# node
+node_modules/
