@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.exceptions import RequestValidationError
-
+from fastapi_pagination import add_pagination
 
 from slowapi import _rate_limit_exceeded_handler # type: ignore
 from slowapi.errors import RateLimitExceeded
@@ -34,7 +34,7 @@ app = FastAPI(
   openapi_url= '/openapi.json' if settings.DEVELOP_MODE else None,
 )
 
-
+add_pagination(app)
 
 # Add exception handler
 app.add_exception_handler(AppException, app_exception_handler)

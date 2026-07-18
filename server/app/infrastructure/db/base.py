@@ -25,13 +25,13 @@ class EssentialColumns(Base):
   uid: Mapped[UUID] = mapped_column(SqlUUID, primary_key=True, index=True, default=lambda _: uuid7())
   created_at: Mapped[datetime] = mapped_column(
     TIMESTAMP(timezone=False),
-    default=PROJECT_DATETIME.get_datetime(),
+    default=PROJECT_DATETIME.get_datetime,
     nullable=False
   )
   updated_at: Mapped[datetime] = mapped_column(
     TIMESTAMP(timezone=False),
-    default=PROJECT_DATETIME.get_datetime(),
-    onupdate=PROJECT_DATETIME.get_datetime(),
+    default=PROJECT_DATETIME.get_datetime,
+    onupdate=PROJECT_DATETIME.get_datetime,
     nullable=False
   )
   deleted_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=False),default=None,nullable=True)

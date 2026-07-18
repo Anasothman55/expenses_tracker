@@ -8,14 +8,14 @@ from sqlalchemy.orm import Mapped, mapped_column
 from ..base import EssentialColumns, EssentialColumnValidation
 
 CategoryGroupName = Annotated[str,StringConstraints(min_length=3,max_length=64,strip_whitespace=True,), Field(examples=["Housing"]),]
-CategoryGroupRgbColor = Annotated[str,StringConstraints(min_length=3,max_length=3,strip_whitespace=True,pattern=r"^[0-9A-Fa-f]{6}$"), Field(examples=["64748B"]),]
+CategoryGroupRgbColor = Annotated[str,StringConstraints(min_length=6,max_length=6,strip_whitespace=True,pattern=r"^[0-9A-Fa-f]{6}$"), Field(examples=["64748B"]),]
 CategoryGroupIcons = Annotated[str, Field(..., max_length=255, examples=['image/icon/house.svg'])]
 
 
 class CategoryGroupModelValidation(EssentialColumnValidation):
   name: CategoryGroupName
   rgb_color: CategoryGroupRgbColor
-  icons: CategoryGroupIcons
+  icons: CategoryGroupIcons | None = None
 
   user_uid: UUID
 
@@ -28,7 +28,7 @@ class CategoryGroupModel(EssentialColumns):
   __tablename__ = 'category_group'
 
   name: Mapped[str] = mapped_column(String(64), nullable=False)
-  rgb_color: Mapped[str] = mapped_column(CHAR(3), nullable=False, default='64748B')
+  rgb_color: Mapped[str] = mapped_column(CHAR(6), nullable=False, default='64748B')
   icons: Mapped[str | None] = mapped_column(String(255), nullable=True,)
 
   user_uid: Mapped[UUID] = mapped_column(SqlUUID, ForeignKey('users.uid', ondelete='CASCADE'), nullable=False)

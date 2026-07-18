@@ -1,15 +1,16 @@
 from uuid import UUID
 
+from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import load_only, DeclarativeMeta, DeclarativeBase
 from sqlalchemy.orm.interfaces import ORMOption
-from sqlalchemy import select, Select, func, inspect
+from sqlalchemy import select, Select, func, inspect, column
 from sqlalchemy.exc import SQLAlchemyError
 
 from rich import print
 
-from fastapi_pagination import Params
+from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi.encoders import jsonable_encoder
 
@@ -109,20 +110,24 @@ class ModelRepository(Generic[T]):
       include_deleted: bool,
       select_stmt: Select[tuple[T]] | None = None,
       params: Params | None = None,
-  )-> Sequence[T] :
+  )-> Sequence[T] | Any:
 
-    stmt = select_stmt if select_stmt is not None else  select(self.model)
+    stmt = select_stmt if select_stmt is not None else select(self.model)
 
     if not include_deleted:
       stmt = stmt.where(self.model.deleted_at.is_(None))
 
-    if not is_pagination:
-      return (await self.db.execute(stmt)).scalars().all()
-    return await paginate(self.db,stmt, params, unique=False)
+    logger.info(stmt)
+    if is_pagination:
+      return await paginate(self.db,stmt, params, unique=False)
+    return (await self.db.execute(stmt)).scalars().all()
 
   @database_exception_wrap
   async def create(self, body: S | dict) -> T:
-    instance = self.model(**body) if type(body) is dict else self.model(**body.model_dump(exclude_unset=True))
+    if isinstance(body, dict):
+      instance = self.model(**body)
+    else:
+      instance = self.model(**body.model_dump(exclude_unset=True))
     self.db.add(instance)
     await self.db.flush()
     await self.db.refresh(instance)
