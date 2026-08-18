@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Optional, Annotated
 
 from sqlalchemy import Text, String, Boolean, Date, DateTime, Integer, Index, text, UUID as SqlUUID, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.config import settings
 from src.shared.utils.constant import PROJECT_DATETIME
@@ -78,6 +78,13 @@ class UserModel(EssentialColumns):
   password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=settings.TIME_ZONE), nullable=True)
 
   user_currencies: Mapped[UUID] = mapped_column(SqlUUID, ForeignKey('currencies.uid', ondelete='RESTRICT') ,nullable=True, default=None)
+  currency: Mapped["CurrenciesModel | None"] = relationship(
+    "CurrenciesModel",
+    remote_side="CurrenciesModel.uid",
+    foreign_keys=[user_currencies],
+    back_populates="users",
+    lazy="select"
+  )
 
   def set_soft_delete(self):
     super().set_soft_delete()

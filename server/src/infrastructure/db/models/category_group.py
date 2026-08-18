@@ -17,7 +17,7 @@ class CategoryGroupModelValidation(EssentialColumnValidation):
   rgb_color: CategoryGroupRgbColor
   icons: CategoryGroupIcons | None = None
 
-  user_uid: UUID
+  user_uid: UUID = Field(exclude=True)
 
   model_config = ConfigDict(
     from_attributes=True,

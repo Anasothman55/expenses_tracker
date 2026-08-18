@@ -1,7 +1,7 @@
 from loguru import logger
 
-from src.core.cache.celery_app import celery_app
-from src.core.cache.tasks.base import BaseTask
+from src.core.task.celery_app import celery_app
+from src.core.task.tasks.base import BaseTask
 from src.infrastructure.email.renderer import render_template
 from src.infrastructure.email.client import send_email
 

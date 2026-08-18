@@ -1,20 +1,28 @@
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
+from src.modules.currencies.schema import CurrenciesUserResponseSchema
 from src.infrastructure.db.models.users import UserModelValidation
 
 
+class UserCreateSchema(BaseModel):
+  pass
 
-class UserCurrencySchema(BaseModel):
+  model_config = ConfigDict(
+    extra="forbid"
+  )
+
+class UserUpdateSchema(BaseModel):
   user_currencies: UUID
+
+  model_config = ConfigDict(
+    str_strip_whitespace=True,
+    extra="forbid"
+  )
 
 
 
 # response
 
 class UserMeResponseSchema(UserModelValidation):
-  pass
-
-class UserCurrencyResponseSchema(UserModelValidation):
-  pass
-
+  currency: CurrenciesUserResponseSchema

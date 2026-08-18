@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.deps.db import get_db
 from src.infrastructure.db.models import UserModel
-from src.infrastructure.db.models.category_group import CategoryGroupModel
+from src.infrastructure.db.models.category_group import CategoryGroupModel,CategoryGroupModelValidation
 from src.modules.auth.deps import get_current_user
 from .service import delete_service, create_service, update_service, get_all_service, get_one_service
 from .schema import CategoryGroupResponseAllSchema, CategoryGroupQueryAll, CategoryGroupFilterAll, \
@@ -30,6 +30,7 @@ endpoint_category_group = EndpointCreator(
   create_schema=CategoryGroupCreateSchema,
   update_schema=CategoryGroupUpdateSchema,
   deleted_at_column='deleted_at',
+  select_schema=CategoryGroupModelValidation,
   tags=["Category Group"],
 )
 
@@ -48,7 +49,8 @@ endpoint_category_group.add_routes_to_router(
   read_multi_deps=[get_current_user],
   update_deps=[get_current_user],
   delete_deps=[get_current_user],
-  db_delete_deps=[get_current_user]
+  db_delete_deps=[get_current_user],
+
 )
 
 

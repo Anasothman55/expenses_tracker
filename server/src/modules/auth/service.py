@@ -32,7 +32,7 @@ from src.core.security.email_reset_password import otp_decoded, OtpData, otp_ver
 from src.core.security.email_verify_token import email_verify_token_decoded, email_verify_token_encoded
 from src.core.security.jsonwebtoken import  create_access_token, create_refresh_token, jwt_decode
 from src.core.security.password_hashing import password_verify, password_hash
-from src.core.cache.tasks.email_tasks import send_verify_email_task, send_password_reset_email_task
+from src.core.task.tasks.email_tasks import send_verify_email_task, send_password_reset_email_task
 from src.infrastructure.db.models.users import UserModel
 from src.modules.auth.schema import (
   UserRegisterSchema,

@@ -1,17 +1,40 @@
 from uuid import UUID
+from rich import print
 
 from fastapi import HTTPException, status
+from fastcrud import FastCRUD
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload, load_only, raiseload
 
 from src.infrastructure.db.models import CurrenciesModel, UserModel
-from src.modules.user.schema import UserCurrencySchema, UserCurrencyResponseSchema
+from src.modules.user.schema import UserUpdateSchema, UserMeResponseSchema
 from src.shared.utils.ctype import ExceptionDetails
 from src.shared.utils.model_repository import ModelRepository
+
+user_crud = FastCRUD(UserModel)
+
+async def me_service(db: AsyncSession, user_uid: UUID):
+  async with ModelRepository[UserModel](db, UserModel) as repo:
+    stmt = select(UserModel).options(
+      load_only(UserModel.username, UserModel.uid),  # Add columns you need from UserModel
+      joinedload(UserModel.currency).options(
+        load_only(
+          CurrenciesModel.name,
+          CurrenciesModel.symbol,
+          CurrenciesModel.code,
+        )
+      )
+    )
+
+    user = await repo.get_one('uid', user_uid, options=None, include_deleted=False, select_stmt=stmt)
+  print(user.currency.__dict__)
+  return user
 
 
 async def currency_service(
     db: AsyncSession,
-    body: UserCurrencySchema,
+    body: UserUpdateSchema,
     user_uid: UUID
 )-> UserModel:
   async with ModelRepository[CurrenciesModel](db, CurrenciesModel) as repo:

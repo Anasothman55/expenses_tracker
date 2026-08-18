@@ -1,9 +1,9 @@
 from pydantic import  Field, StringConstraints, ConfigDict
 
-from typing import Annotated
+from typing import Annotated, Optional
 
 from sqlalchemy import  String, Index, text, CHAR
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..base import EssentialColumns, EssentialColumnValidation
 
@@ -30,6 +30,11 @@ class CurrenciesModel(EssentialColumns):
   name: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
   code: Mapped[str] = mapped_column(CHAR(3), nullable=False, unique=True)
   symbol: Mapped[str] = mapped_column(String(10), nullable=False, unique=True)
+
+  users: Mapped[list["UserModel"]] = relationship(
+    "UserModel", back_populates="currency", lazy="select"
+  )
+
 
   def set_soft_delete(self):
     super().set_soft_delete()

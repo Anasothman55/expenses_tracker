@@ -66,13 +66,15 @@ class ModelRepository(Generic[T]):
       self,
       field: str,
       value: Any,
-      options: Iterable[ORMOption] = [], # type ignore
+      options: Iterable[ORMOption] | None = None, # type: ignore
       include_deleted: bool = False,
       select_stmt: Select | None = None,
   ) -> T :
 
-    stmt = select_stmt if select_stmt else  select(self.model)
-    stmt = stmt.where(getattr(self.model, field) == value).options(*options)
+    stmt = select_stmt if select_stmt is not None else  select(self.model)
+    stmt = stmt.where(getattr(self.model, field) == value)
+    if options:
+      stmt = stmt.options(*options)
 
     if not include_deleted:
       stmt = stmt.where(self.model.deleted_at.is_(None))
