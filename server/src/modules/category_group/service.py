@@ -2,16 +2,20 @@ from typing import Sequence, Any, List
 from uuid import UUID
 
 from fastapi_pagination import Params
+from fastcrud import FastCRUD
 from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
+from src.modules.categories.schema import CategoriesResponseSchema
+from src.infrastructure.db.models import CategoriesModel
 from src.infrastructure.db.models import CategoryGroupModel
 from src.shared.utils.model_repository import ModelRepository
 from src.shared.utils.sql_operator import OPERATORS
-from .schema import CategoryGroupCreateSchema, CategoryGroupFilterAll
+from .schema import CategoryGroupCreateSchema, CategoryGroupFilterAll, CategoryGroupResponseSchema
 
-  
+category_group_crud = FastCRUD(CategoryGroupModel)
+
+
 async def get_all_service(
     db: AsyncSession,
     params: Params,
@@ -38,6 +42,7 @@ async def get_all_service(
       params=params
     ))
 
+
 async def create_service(
     body: CategoryGroupCreateSchema,
     db: AsyncSession,
@@ -49,9 +54,22 @@ async def create_service(
 
 async def get_one_service(
     uid: UUID,
-    db: AsyncSession
-):
-  pass
+    db: AsyncSession,
+    user_uid: UUID,
+) -> CategoryGroupResponseSchema:
+  group = await category_group_crud.get_joined(
+    db=db,
+    schema_to_select=CategoryGroupResponseSchema,
+    join_model=CategoriesModel,
+    join_prefix="categories",
+    join_schema_to_select=CategoriesResponseSchema,   # only name, symbol, code
+    join_type="left",
+    nest_joins=True,
+    relationship_type="one-to-many",
+    **{"user_uid": user_uid, 'uid': uid},
+  )
+
+  return group
 
 async def update_service(
     uid: UUID,

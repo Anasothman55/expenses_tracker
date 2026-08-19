@@ -3,13 +3,14 @@ from pydantic import Field, StringConstraints, ConfigDict
 from typing import  Annotated
 
 from sqlalchemy import String, CHAR, UUID as SqlUUID, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..base import EssentialColumns, EssentialColumnValidation
 
 CategoryGroupName = Annotated[str,StringConstraints(min_length=3,max_length=64,strip_whitespace=True,), Field(examples=["Housing"]),]
 CategoryGroupRgbColor = Annotated[str,StringConstraints(min_length=6,max_length=6,strip_whitespace=True,pattern=r"^[0-9A-Fa-f]{6}$"), Field(examples=["64748B"]),]
 CategoryGroupIcons = Annotated[str, Field(..., max_length=255, examples=['image/icon/house.svg'])]
+
 
 
 class CategoryGroupModelValidation(EssentialColumnValidation):
@@ -32,6 +33,12 @@ class CategoryGroupModel(EssentialColumns):
   icons: Mapped[str | None] = mapped_column(String(255), nullable=True,)
 
   user_uid: Mapped[UUID] = mapped_column(SqlUUID, ForeignKey('users.uid', ondelete='CASCADE'), nullable=False)
+
+  categories: Mapped[list['CategoriesModel']] = relationship(
+    "CategoriesModel",
+    back_populates="group",
+    lazy="select"
+  )
 
   def set_soft_delete(self):
     super().set_soft_delete()

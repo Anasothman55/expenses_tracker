@@ -77,7 +77,7 @@ class UserModel(EssentialColumns):
   last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=settings.TIME_ZONE), nullable=True)
   password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=settings.TIME_ZONE), nullable=True)
 
-  user_currencies: Mapped[UUID] = mapped_column(SqlUUID, ForeignKey('currencies.uid', ondelete='RESTRICT') ,nullable=True, default=None)
+  user_currencies: Mapped[UUID | None] = mapped_column(SqlUUID, ForeignKey('currencies.uid', ondelete='RESTRICT') ,nullable=True, default=None)
   currency: Mapped["CurrenciesModel | None"] = relationship(
     "CurrenciesModel",
     remote_side="CurrenciesModel.uid",

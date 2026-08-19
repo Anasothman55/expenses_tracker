@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator, ValidationEr
 
 from fastapi import Query, Depends
 
+from src.modules.categories.schema import CategoriesResponseSchema
 from src.infrastructure.db.models.category_group import CategoryGroupModelValidation
 from src.infrastructure.db.models.category_group import (
   CategoryGroupName,
@@ -43,6 +44,9 @@ class CategoryGroupUpdateSchema(BaseModel):
 
 class CategoryGroupResponseAllSchema(CategoryGroupModelValidation):
   pass
+
+class CategoryGroupResponseSchema(CategoryGroupModelValidation):
+  categories: list[CategoriesResponseSchema] | None = None
 
 # query params
 

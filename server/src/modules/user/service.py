@@ -28,8 +28,6 @@ async def me_service(db: AsyncSession, user_uid: UUID):
     **{"uid": user_uid},
   )
 
-  print(user)
-
   # async with ModelRepository[UserModel](db, UserModel) as repo:
   #   stmt = select(UserModel).options(
   #     joinedload(UserModel.currency).options(

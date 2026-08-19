@@ -25,4 +25,4 @@ class UserUpdateSchema(BaseModel):
 # response
 
 class UserMeResponseSchema(UserModelValidation):
-  currency: CurrenciesUserResponseSchema
+  currency: CurrenciesUserResponseSchema | None
