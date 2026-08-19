@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from fastcrud import FastCRUD, EndpointCreator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.modules.currencies.schema import CurrenciesCreateSchema, CurrenciesUpdateSchema
+from src.modules.currencies.schema import CurrenciesCreateSchema, CurrenciesResponseSchema, CurrenciesUpdateSchema
 from src.modules.currencies.service import get_currencies_service, post_currencies_service
 from src.core.deps.db import get_db
 from src.modules.auth.deps import get_current_user
@@ -20,7 +20,7 @@ endpoint_currency = EndpointCreator(
   tags=["Currency"],
   create_schema=CurrenciesCreateSchema,
   update_schema=CurrenciesUpdateSchema,
-  select_schema=CurrenciesModelValidation,
+  select_schema=CurrenciesResponseSchema,
 )
 
 endpoint_currency.add_routes_to_router(

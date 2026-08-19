@@ -5,6 +5,7 @@ from fastcrud import FastCRUD, EndpointCreator
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from .schema import UserCreateSchema, UserMeResponseSchema, UserUpdateSchema
 from src.core.deps.db import get_db
 from src.infrastructure.db.models import UserModel
@@ -21,8 +22,7 @@ user_route = APIRouter(
 )
 
 
-#@user_route.get('/me', response_model=UserMeResponseSchema, response_model_exclude={"encoded_password"}, status_code=200)
-@user_route.get('/me', status_code=200)
+@user_route.get('/me', response_model=UserMeResponseSchema, response_model_exclude={"encoded_password"}, status_code=200)
 async def me(
     current_user: Annotated[UserModel, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],

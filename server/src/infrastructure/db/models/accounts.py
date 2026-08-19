@@ -10,7 +10,7 @@ from sqlalchemy import Text, String, Boolean, Date, DateTime, Integer, Index, te
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.core.config import settings
-from src.shared.enums.tables import AccountTypeEnum, AccouontLoanTypeEnum
+from src.shared.enums.tables import AccountTypeEnum, AccountLoanTypeEnum
 from src.shared.utils.constant import PROJECT_DATETIME
 from ..base import Base, EssentialColumns, EssentialColumnValidation
 
@@ -25,7 +25,7 @@ class AccountsModelValidation(EssentialColumnValidation):
   loan_start: date | None = None
   loan_end: date | None = None
   loan_finish: date | None = None
-  loan_type: AccouontLoanTypeEnum
+  loan_type: AccountLoanTypeEnum
   account_type: AccountTypeEnum | None = None
 
   account_currencies: UUID
@@ -50,8 +50,8 @@ class AccountsModel(EssentialColumns):
     SqlEnum(AccountTypeEnum, name="account_type_enum", create_type=True),
     nullable=False, default=AccountTypeEnum.Wallet
   )
-  loan_type: Mapped[AccouontLoanTypeEnum | None] = mapped_column(
-    SqlEnum(AccouontLoanTypeEnum, name="account_loan_type_enum", create_type=True),
+  loan_type: Mapped[AccountLoanTypeEnum | None] = mapped_column(
+    SqlEnum(AccountLoanTypeEnum, name="account_loan_type_enum", create_type=True),
     nullable=False,
   )
 

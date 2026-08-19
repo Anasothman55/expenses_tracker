@@ -12,7 +12,7 @@ class AccountTypeEnum(StrEnum):
   DigitalWallet = "digital_wallet"  # Apple Pay, Samsung Pay
 
 
-class AccouontLoanTypeEnum(StrEnum):
+class AccountLoanTypeEnum(StrEnum):
   Owed ="owed" 
   Give ="give"
 

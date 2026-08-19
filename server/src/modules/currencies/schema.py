@@ -1,10 +1,18 @@
 
+from uuid import UUID
+
 from pydantic import ConfigDict, BaseModel
 
 from src.infrastructure.db.models.currencies import  CurrenciesName, CurrenciesCode, CurrenciesSymbol
 
 
-class CurrenciesUserResponseSchema(BaseModel):
+class CurrenciesResponseSchema(BaseModel):
+  uid: UUID
+  name: CurrenciesName
+  code: CurrenciesCode
+  symbol: CurrenciesSymbol
+
+class CurrenciesUserResponseSchema(CurrenciesResponseSchema):
   name: CurrenciesName
   code: CurrenciesCode
   symbol: CurrenciesSymbol
