@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi_pagination import Params
 from fastcrud import FastCRUD
+from fastcrud.types import GetMultiResponseModel
 from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,36 +12,34 @@ from src.infrastructure.db.models import CategoriesModel
 from src.infrastructure.db.models import CategoryGroupModel
 from src.shared.utils.model_repository import ModelRepository
 from src.shared.utils.sql_operator import OPERATORS
-from .schema import CategoryGroupCreateSchema, CategoryGroupFilterAll, CategoryGroupResponseSchema
+from .schema import CategoryGroupCreateSchema, CategoryGroupFilterAll, CategoryGroupResponseSchema, \
+  CategoryGroupReadMultiFilter, CategoryGroupResponseAllSchema
 
 category_group_crud = FastCRUD(CategoryGroupModel)
 
 
 async def get_all_service(
     db: AsyncSession,
-    params: Params,
-    filters: List[CategoryGroupFilterAll],
-    user_uid: UUID ,
-    is_pagination: bool = False,
-    include_deleted: bool = False,
-)-> Sequence[CategoryGroupModel] | Any:
+    user_uid: UUID,
+    filters: CategoryGroupReadMultiFilter
+):
+  dumped_filter = filters.model_dump(exclude_none=True)
+  offset = dumped_filter.pop("offset", 0)
+  limit = dumped_filter.pop("limit", 100)
+  sort_columns = dumped_filter.pop("sort_columns", None)
+  sort_orders = dumped_filter.pop("sort_orders", None)
 
-  stmt: Select[tuple[CategoryGroupModel]] = (select(CategoryGroupModel).where(CategoryGroupModel.user_uid == user_uid))
-
-  for f in filters:
-    attr = getattr(CategoryGroupModel, f.column.value)
-    op_func = OPERATORS[f.operator.value]
-    stmt = stmt.where(op_func(attr, f.value))
-
-
-
-  async with ModelRepository[CategoryGroupModel](db, CategoryGroupModel) as repo:
-    return (await repo.get_all(
-      is_pagination=is_pagination,
-      include_deleted=include_deleted,
-      select_stmt=stmt,
-      params=params
-    ))
+  return await category_group_crud.get_multi(
+    db=db,
+    schema_to_select=CategoryGroupResponseAllSchema,
+    return_as_model=True,
+    offset=offset,
+    limit=limit,
+    sort_columns=sort_columns,
+    sort_orders=sort_orders,
+    user_uid=user_uid,
+    **dumped_filter,
+  )
 
 
 async def create_service(
@@ -56,7 +55,7 @@ async def get_one_service(
     uid: UUID,
     db: AsyncSession,
     user_uid: UUID,
-) -> CategoryGroupResponseSchema:
+) :
   group = await category_group_crud.get_joined(
     db=db,
     schema_to_select=CategoryGroupResponseSchema,

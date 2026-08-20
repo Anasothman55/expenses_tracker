@@ -45,6 +45,10 @@ class CategoryGroupUpdateSchema(BaseModel):
 class CategoryGroupResponseAllSchema(CategoryGroupModelValidation):
   pass
 
+class CategoryGroupReadMultiResponse(BaseModel):
+  data: list[CategoryGroupResponseAllSchema]
+  total_count: int
+
 class CategoryGroupResponseSchema(CategoryGroupModelValidation):
   categories: list[CategoriesResponseSchema] | None = None
 
@@ -61,6 +65,21 @@ class CategoryGroupQueryAll(BaseModel):
 
 
 # filter query
+
+class CategoryGroupReadMultiFilter(BaseModel):
+  offset: int | None = Field(None, ge=0)
+  limit: int | None = Field(None, ge=1, le=100)
+
+  name: str | None = None
+
+  # operator-suffixed filters (FastCRUD convention: field__operator)
+  name__ilike: str | None = None          # case-insensitive partial match
+  created_at__gte: datetime | None = None
+  created_at__lte: datetime | None = None
+
+  # optional sorting
+  sort_columns: list[str] | None = None
+  sort_orders: list[str] | None = None
 
 class CategoryGroupColumn(StrEnum):
   created_at = 'created_at'

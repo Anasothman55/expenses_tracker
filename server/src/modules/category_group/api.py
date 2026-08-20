@@ -2,24 +2,32 @@ from uuid import UUID
 
 from typing import Annotated
 
-from fastapi.params import Body
-from fastcrud import EndpointCreator, FastCRUD, crud_router
+from fastapi.params import Body, Query
+from fastcrud import EndpointCreator, FastCRUD, crud_router, FilterConfig
 from rich import print
 
 from fastapi import APIRouter, Depends, dependencies, status, Path, Query
 from fastapi_pagination import Page, Params
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.shared.utils.fastcrud_filter import add_filter
 from src.core.deps.db import get_db
 from src.infrastructure.db.models import UserModel
 from src.infrastructure.db.models.category_group import CategoryGroupModel,CategoryGroupModelValidation
 from src.modules.auth.deps import get_current_user
 from .service import delete_service, create_service, update_service, get_all_service, get_one_service, category_group_crud
 from .schema import CategoryGroupResponseAllSchema, CategoryGroupQueryAll, CategoryGroupFilterAll, \
-  CategoryGroupCreateSchema, CategoryGroupUpdateSchema, CategoryGroupResponseSchema
+  CategoryGroupCreateSchema, CategoryGroupUpdateSchema, CategoryGroupResponseSchema, CategoryGroupReadMultiFilter, \
+  CategoryGroupReadMultiResponse
 from .deps import parse_category_group_filters
 
 
+filter_config = FilterConfig(**{
+    # simple exact-match filters
+    **add_filter("created_at", {"between_": True}),
+    **add_filter("name", {"ilike_": True, "eq_": True})
+
+})
 # ---- 1. Rename generated endpoints ----
 
 endpoint_category_group = EndpointCreator(
@@ -30,14 +38,13 @@ endpoint_category_group = EndpointCreator(
   update_schema=CategoryGroupUpdateSchema,
   deleted_at_column='deleted_at',
   select_schema=CategoryGroupResponseAllSchema,
-
+  filter_config=filter_config,
   tags=["Category Group"],
 )
 
 # ---- 2. Only expose the methods you actually want ----
 endpoint_category_group.add_routes_to_router(
   included_methods=[
-    "read_multi",
     "update",
     "delete",
     "db_delete",
@@ -48,6 +55,15 @@ endpoint_category_group.add_routes_to_router(
   db_delete_deps=[get_current_user],
 
 )
+
+@endpoint_category_group.router.get('/', tags=['Category Group'], response_model=CategoryGroupReadMultiResponse)
+async def get_one(
+    filters: Annotated[CategoryGroupReadMultiFilter, Query()],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[UserModel, Depends(get_current_user)]
+):
+  return await get_all_service( db, current_user.uid, filters)
+
 
 @endpoint_category_group.router.post("/", tags=['Category Group'], response_model=CategoryGroupResponseAllSchema)
 async def create(
