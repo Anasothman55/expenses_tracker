@@ -2,9 +2,11 @@ import asyncio
 from rich import print
 import httpx
 
+from src.shared.utils.fastcrud_filter import FilterType
+
 api = "http://127.0.0.1:8001/api/v1"
 
-bearer = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMWEwMTkxMy1jMjI2LTcwOTMtYTcwZS04Y2I0ZDdjMjQ1MTMiLCJzZXNzaW9uX2lkIjoiMDFhMDFkZWMtYWRhMC03MzljLWEzMmEtNmMwYWVhYTk0ZjhmIiwianRpIjoiMDFhMDFkZjgtMzljZi03NTVlLTljZGUtYzJjN2IyYzdlNTZjIiwidHlwZSI6ImFjY2VzcyIsImFpdCI6MTc4NzIwOTIwMiwiZXhwIjoxNzg3MjE2NDAyfQ.gzKByOQwcA7HrrprMkkKYbvcbE2s249WrPPcH86LEGQ"
+bearer = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMWEwMTVhMi05NTUyLTc0ZDEtOTVkYi1kYTBmOTZlOTdkN2YiLCJzZXNzaW9uX2lkIjoiMDFhMDIwNmQtMjgyZS03MDZjLWI1MjEtMzQ1MmQ4MTIzZTA1IiwianRpIjoiMDFhMDIwNmQtMjgyZS03MDZjLWI1MjEtMzQ1NDBiMjBlYjQ3IiwidHlwZSI6ImFjY2VzcyIsImFpdCI6MTc4NzI1MDQxOSwiZXhwIjoxNzg3MjU3NjE5fQ.xlH5uKcQ1UwS-qWERvXf-_Hc4c9qtmo9OxLV8SnNUng"
 
 headers = {
   "Authorization": f"Bearer {bearer}",
@@ -12,11 +14,6 @@ headers = {
 }
 
 group_list: list = [
-  {
-    "name": "Housing",
-    "rgb_color": "64748B",
-    "icons": None
-  },
   {
     "name": "Utilities",
     "rgb_color": "64748B",
@@ -73,7 +70,7 @@ group_list: list = [
 #       print(res.json())
 
 async def main():
-  print(bearer)
+  print(True)
 
 if __name__ == "__main__":
   asyncio.run(main())

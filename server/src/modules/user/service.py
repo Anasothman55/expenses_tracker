@@ -65,7 +65,7 @@ async def currency_service(
         )]
       )
 
-    data = await repo.update(user_uid, body, None)
+    data = await repo.update(user_uid, body=body)
     data.currency = currency
     return data
 

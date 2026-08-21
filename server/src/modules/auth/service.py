@@ -165,7 +165,7 @@ async def login_service(
     except NotFoundException:
       raise to_raise
     if not password_verify(user.encoded_password, body.password):
-      await repo.update(user.uid, {'failed_login_attempts': user.failed_login_attempts + 1})
+      await repo.update(user.uid, body_dict={'failed_login_attempts': user.failed_login_attempts + 1})
       await db.commit()
       raise to_raise
 
@@ -318,7 +318,7 @@ async def refresh_service(
   )
 
   async with ModelRepository[UserModel](db, UserModel) as repo:
-    await repo.update(UUID(refresh_claims.sub), {'last_login_at': PROJECT_DATETIME.get_datetime()})
+    await repo.update(UUID(refresh_claims.sub), body_dict={'last_login_at': PROJECT_DATETIME.get_datetime()})
 
   return UserRefreshTokenResponseSchema(
     access_token=access_token,

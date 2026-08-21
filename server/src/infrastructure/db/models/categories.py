@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..base import Base, EssentialColumns, EssentialColumnValidation
 
-CategoriesName = Annotated[str,StringConstraints(min_length=3,max_length=64,strip_whitespace=True,), Field(examples=["Housing"]),]
+CategoriesName = Annotated[str,StringConstraints(min_length=3,max_length=64,strip_whitespace=True,), Field(examples=["Rent"]),]
 CategoriesRgbColor = Annotated[str,StringConstraints(min_length=6,max_length=6,strip_whitespace=True,pattern=r"^[0-9A-Fa-f]{6}$"), Field(examples=["64748B"]),]
 CategoriesIcons = Annotated[str, Field(..., max_length=255, examples=['image/icon/house.svg'])]
 CategoriesIsTransfer = Annotated[bool, StrictBool, Field(...)]
@@ -18,7 +18,7 @@ CategoriesIsTransfer = Annotated[bool, StrictBool, Field(...)]
 class CategoriesModelValidation(EssentialColumnValidation):
   name: CategoriesName
   rgb_color: CategoriesRgbColor
-  icons: CategoriesIcons
+  icons: CategoriesIcons | None = None
   is_transfer: CategoriesIsTransfer
 
   user_uid: UUID

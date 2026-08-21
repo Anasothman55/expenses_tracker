@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Annotated
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, status, Path, Query
 from fastcrud import FastCRUD, EndpointCreator
@@ -9,48 +9,69 @@ from src.infrastructure.db.models import UserModel
 from src.infrastructure.db.models.categories import CategoriesModel, CategoriesModelValidation
 from src.core.deps.db import get_db
 from src.modules.auth.deps import get_current_user
-from .service import delete_service, create_service, update_service, get_all_service, get_one_service, categories_crud
-from .schema import CategoriesCreateSchema, CategoriesUpdateSchema, CategoriesResponseSchema
+from .service import hard_delete_service, create_service, update_service, get_all_service, get_one_service, categories_crud, delete_service
+from .schema import CategoriesCreateSchema, CategoriesUpdateSchema, CategoriesResponseSchema, \
+  CategoriesReadMultiResponse, CategoriesReadMultiFilter, CategoriesReadResponse
 
-
-
-# ---- 1. Rename generated endpoints ----
-
-endpoint_categories = EndpointCreator(
-  session=get_db,
-  model=CategoriesModel,
-  crud=categories_crud,
-  create_schema=None,
-  update_schema=CategoriesUpdateSchema,
-  deleted_at_column='deleted_at',
-  select_schema=CategoriesResponseSchema,
+categories_route = APIRouter(
   tags=["Categories"],
+  dependencies=[Depends(get_current_user)]
 )
 
-# ---- 2. Only expose the methods you actually want ----
-endpoint_categories.add_routes_to_router(
-  included_methods=[
-    "read",
-    "read_multi",
-    "update",
-    "delete",
-    "db_delete",
-  ],
-  read_deps=[get_current_user],
-  read_multi_deps=[get_current_user],
-  update_deps=[get_current_user],
-  delete_deps=[get_current_user],
-  db_delete_deps=[get_current_user],
-)
+@categories_route.get('/', response_model=CategoriesReadMultiResponse)
+async def get_multi(
+    filters: Annotated[CategoriesReadMultiFilter, Query()],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[UserModel, Depends(get_current_user)]
+):
+  return await get_all_service( db, current_user.uid, filters)
 
 
-@endpoint_categories.router.post('/', tags=["Categories"], response_model=CategoriesResponseSchema ,status_code=status.HTTP_201_CREATED)
+@categories_route.post('/', response_model=CategoriesResponseSchema ,status_code=status.HTTP_201_CREATED)
 async def create(
     db: Annotated[AsyncSession, Depends(get_db)],
     body: CategoriesCreateSchema,
     current_user: Annotated[UserModel, Depends(get_current_user)]
-) -> CategoriesResponseSchema:
+) :
   return await create_service(body,db, current_user.uid)
+
+@categories_route.get('/{uid}', response_model=CategoriesReadResponse ,status_code=status.HTTP_201_CREATED)
+async def get(
+    uid: UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[UserModel, Depends(get_current_user)]
+) :
+  return await get_one_service(uid, db, current_user.uid)
+
+@categories_route.put('/{uid}', response_model=CategoriesResponseSchema ,status_code=status.HTTP_201_CREATED)
+async def put(
+    uid: UUID,
+    body: CategoriesUpdateSchema,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[UserModel, Depends(get_current_user)]
+) :
+  return await update_service(uid, db, current_user.uid, body)
+
+# @categories_route.delete('/hard/{uid}' ,status_code=status.HTTP_204_NO_CONTENT)
+# async def hard_delete(
+#     uid: UUID,
+#     db: Annotated[AsyncSession, Depends(get_db)],
+#     current_user: Annotated[UserModel, Depends(get_current_user)]
+# ) :
+#   return await hard_delete_service( current_user.uid,uid, db)
+
+
+@categories_route.delete('/{uid}' ,status_code=status.HTTP_202_ACCEPTED)
+async def delete(
+    uid: UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[UserModel, Depends(get_current_user)],
+    hard: Annotated[bool, Query()] | None = None
+) :
+  if hard:
+    return await hard_delete_service( current_user.uid,uid, db)
+  return await delete_service( current_user.uid,uid, db)
+
 
 # categories_route = APIRouter(
 #   tags=["Categories"],

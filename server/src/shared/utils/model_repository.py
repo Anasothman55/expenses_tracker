@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import load_only, DeclarativeMeta, DeclarativeBase
 from sqlalchemy.orm.interfaces import ORMOption
 from sqlalchemy import select, Select, func, inspect, column
+from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.exc import SQLAlchemyError
 
 from rich import print
@@ -64,15 +65,21 @@ class ModelRepository(Generic[T]):
   @database_exception_wrap
   async def get_one(
       self,
-      field: str,
-      value: Any,
+      field: str | None = None,
+      value: Any | None = None,
       options: Iterable[ORMOption] | None = None, # type: ignore
       include_deleted: bool = False,
       select_stmt: Select | None = None,
+      condition: tuple[ColumnElement[bool], ...] | None = None,
   ) -> T :
 
     stmt = select_stmt if select_stmt is not None else  select(self.model)
-    stmt = stmt.where(getattr(self.model, field) == value)
+
+    if field is not None:
+      stmt = stmt.where(getattr(self.model, field) == value)
+    if condition is not None:
+      stmt = stmt.where(*condition)
+
     if options:
       stmt = stmt.options(*options)
 
@@ -88,10 +95,10 @@ class ModelRepository(Generic[T]):
           ExceptionDetails(
             loc=[field],
             input=value,
-            msg=f'Value {value} not found in {self.model}: {field}',
+            msg=f'Value {value} not found in {self.model.__name__}: {field}',
             type=f'type_error.{field}'
           )
-        ]
+        ] if field is not None else []
       )
 
   @database_exception_wrap
@@ -137,11 +144,21 @@ class ModelRepository(Generic[T]):
 
 
   @database_exception_wrap
-  async def update(self, uid: UUID | None = None, body: S | dict | None = None, obj_instance: T | None = None) -> T:
+  async def update(
+      self,
+      uid: UUID | None = None,
+      body: S | None = None,
+      body_dict: dict | None = None,
+      obj_instance: T | None = None
+  ) -> T:
     """ for update model but as note never update deleted_at"""
     if obj_instance is None:
       instance = await self.get_one("uid", uid)
-      data = body if type(body) is dict else body.model_dump(exclude_unset=True)
+      data = {}
+      if body:
+        data = body.model_dump(exclude_unset=True, exclude_none=True)
+      if body_dict:
+        data = body_dict
       for key, value in data.items():
         if hasattr(instance, key):
           setattr(instance, key, value)

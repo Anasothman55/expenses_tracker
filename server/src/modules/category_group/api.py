@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, dependencies, status, Path, Query
 from fastapi_pagination import Page, Params
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.shared.utils.fastcrud_filter import add_filter
+from src.shared.utils.fastcrud_filter import FilterType
 from src.core.deps.db import get_db
 from src.infrastructure.db.models import UserModel
 from src.infrastructure.db.models.category_group import CategoryGroupModel,CategoryGroupModelValidation
@@ -22,12 +22,7 @@ from .schema import CategoryGroupResponseAllSchema, CategoryGroupQueryAll, Categ
 from .deps import parse_category_group_filters
 
 
-filter_config = FilterConfig(**{
-    # simple exact-match filters
-    **add_filter("created_at", {"between_": True}),
-    **add_filter("name", {"ilike_": True, "eq_": True})
 
-})
 # ---- 1. Rename generated endpoints ----
 
 endpoint_category_group = EndpointCreator(
@@ -38,7 +33,6 @@ endpoint_category_group = EndpointCreator(
   update_schema=CategoryGroupUpdateSchema,
   deleted_at_column='deleted_at',
   select_schema=CategoryGroupResponseAllSchema,
-  filter_config=filter_config,
   tags=["Category Group"],
 )
 
@@ -57,7 +51,7 @@ endpoint_category_group.add_routes_to_router(
 )
 
 @endpoint_category_group.router.get('/', tags=['Category Group'], response_model=CategoryGroupReadMultiResponse)
-async def get_one(
+async def get_multi(
     filters: Annotated[CategoryGroupReadMultiFilter, Query()],
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[UserModel, Depends(get_current_user)]

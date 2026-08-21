@@ -1,12 +1,17 @@
 from datetime import datetime
 from enum import StrEnum
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, model_validator, ValidationError, field_validator
+import json
 
 from fastapi import Query, Depends
 
+from src.shared.schema.read_multi_essential import ReadMultiEssential
+from src.shared.utils.fastcrud_filter import create_filter
+from src.shared.schema.filter_essentials import FilterEssentials
+from src.shared.utils.fastcrud_filter import FilterType,FilterTypeDict
 from src.modules.categories.schema import CategoriesResponseSchema
 from src.infrastructure.db.models.category_group import CategoryGroupModelValidation
 from src.infrastructure.db.models.category_group import (
@@ -45,9 +50,8 @@ class CategoryGroupUpdateSchema(BaseModel):
 class CategoryGroupResponseAllSchema(CategoryGroupModelValidation):
   pass
 
-class CategoryGroupReadMultiResponse(BaseModel):
+class CategoryGroupReadMultiResponse(ReadMultiEssential):
   data: list[CategoryGroupResponseAllSchema]
-  total_count: int
 
 class CategoryGroupResponseSchema(CategoryGroupModelValidation):
   categories: list[CategoriesResponseSchema] | None = None
@@ -66,20 +70,24 @@ class CategoryGroupQueryAll(BaseModel):
 
 # filter query
 
-class CategoryGroupReadMultiFilter(BaseModel):
-  offset: int | None = Field(None, ge=0)
-  limit: int | None = Field(None, ge=1, le=100)
+NameFilter = create_filter('name', {"eq":True, "ilike":True, 'in':True}, str)
+Created_atFilter = create_filter('created_at', {"lte":True, "gte":True, 'between': True}, datetime)
 
-  name: str | None = None
+class CategoryGroupReadMultiFilter(FilterEssentials, NameFilter, Created_atFilter):
 
-  # operator-suffixed filters (FastCRUD convention: field__operator)
-  name__ilike: str | None = None          # case-insensitive partial match
-  created_at__gte: datetime | None = None
-  created_at__lte: datetime | None = None
+  @classmethod
+  def preprocess(cls, data: dict) -> dict:
+    filters = {}
 
-  # optional sorting
-  sort_columns: list[str] | None = None
-  sort_orders: list[str] | None = None
+    for k, v in data.items():
+      if k.startswith("name__"):
+        filters[k] = v
+
+      elif k.startswith("created_at__"):
+        filters[k] = v
+
+    return filters
+
 
 class CategoryGroupColumn(StrEnum):
   created_at = 'created_at'

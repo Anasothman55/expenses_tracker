@@ -7,7 +7,7 @@ from .base import Base
 
 engine = create_async_engine(
   url=settings.db_url(),
-  echo= settings.DEVELOP_MODE,
+  echo= not settings.DEVELOP_MODE,
 
   pool_size=10,
   max_overflow=20,

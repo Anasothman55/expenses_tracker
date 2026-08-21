@@ -1,12 +1,14 @@
 from typing import Sequence, Any, List
 from uuid import UUID
+from rich import print
 
 from fastapi_pagination import Params
-from fastcrud import FastCRUD
-from fastcrud.types import GetMultiResponseModel
+from fastcrud import FastCRUD, compute_offset, paginated_response
+from fastcrud.types import GetMultiResponseModel, GetMultiResponseDict
 from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.shared.utils.fastcrud_filter import FilterType
 from src.modules.categories.schema import CategoriesResponseSchema
 from src.infrastructure.db.models import CategoriesModel
 from src.infrastructure.db.models import CategoryGroupModel
@@ -21,15 +23,17 @@ category_group_crud = FastCRUD(CategoryGroupModel)
 async def get_all_service(
     db: AsyncSession,
     user_uid: UUID,
-    filters: CategoryGroupReadMultiFilter
+    filters: CategoryGroupReadMultiFilter,
 ):
-  dumped_filter = filters.model_dump(exclude_none=True)
-  offset = dumped_filter.pop("offset", 0)
-  limit = dumped_filter.pop("limit", 100)
+  dumped_filter = filters.model_dump(exclude_none=True, by_alias=True)
+  page = dumped_filter.pop("page", 1)
+  items_per_page = dumped_filter.pop("items_per_page", 100)
+  offset = dumped_filter.pop("offset", compute_offset(page=page, items_per_page=items_per_page))
+  limit = dumped_filter.pop("limit", items_per_page)
   sort_columns = dumped_filter.pop("sort_columns", None)
   sort_orders = dumped_filter.pop("sort_orders", None)
 
-  return await category_group_crud.get_multi(
+  groups = await category_group_crud.get_multi(
     db=db,
     schema_to_select=CategoryGroupResponseAllSchema,
     return_as_model=True,
@@ -38,7 +42,13 @@ async def get_all_service(
     sort_columns=sort_columns,
     sort_orders=sort_orders,
     user_uid=user_uid,
-    **dumped_filter,
+    **filters.preprocess(dumped_filter)
+  )
+
+  return paginated_response(
+    page=page,
+    items_per_page=items_per_page,
+    crud_data=groups
   )
 
 
