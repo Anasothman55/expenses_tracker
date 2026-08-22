@@ -6,7 +6,7 @@ from src.infrastructure.db.engine import SessionLocal
 from src.infrastructure.db.models import CurrenciesModel
 from src.modules.currencies.api import currency_crud, CurrenciesCreateSchema
 
-
+  
 
 async def main():
 

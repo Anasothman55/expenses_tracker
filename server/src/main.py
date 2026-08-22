@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi_pagination import add_pagination
+from sqladmin import Admin
 
 from slowapi import _rate_limit_exceeded_handler # type: ignore
 from slowapi.errors import RateLimitExceeded
@@ -13,11 +14,13 @@ from src.core.errors.handler import (
   validation_exception_handler,
   http_exception_handler
 )
+from src.admin.views import UserView, CurrencyView
 from src.core.lifespan import fastapi_lifespan
 from src.core.middleware.logger_middleware import LoggerMiddleware
 from src.modules.routes import router_v1
 from src.shared.schema.main import HealthCheckResponse
 from src.core.limiter import limiter
+from src.infrastructure.db.engine import engine
 
 app = FastAPI(
   title='Expenses API',
@@ -33,6 +36,10 @@ app = FastAPI(
   redoc_url= '/redoc' if settings.DEVELOP_MODE else None,
   openapi_url= '/openapi.json' if settings.DEVELOP_MODE else None,
 )
+
+admin = Admin(app, engine)
+admin.add_view(UserView)
+admin.add_view(CurrencyView)
 
 #add_pagination(app)
 

@@ -24,8 +24,12 @@ class Settings(BaseSettings):
   DATABASE_PORT: int
   DATABASE_NAME: str
 
+  NEON_DATABASE_URL: str | None
+
   def db_url(self) -> str:
-    return f"postgresql+psycopg://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD.get_secret_value()}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
+    if self.NEON_DATABASE_URL is None:
+      return f"postgresql+psycopg://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD.get_secret_value()}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
+    return self.NEON_DATABASE_URL
 
   REDIS_HOST: str
   REDIS_PORT: int = 6379

@@ -1164,6 +1164,7 @@ dependencies = [
     { name = "sqladmin" },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "v" },
+    { name = "wtforms" },
 ]
 
 [package.metadata]
@@ -1190,6 +1191,7 @@ requires-dist = [
     { name = "sqladmin", specifier = ">=0.31.0" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.51" },
     { name = "v", specifier = ">=1" },
+    { name = "wtforms", specifier = ">=3.2.2" },
 ]
 
 [[package]]

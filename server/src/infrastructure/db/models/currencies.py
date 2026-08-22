@@ -43,3 +43,5 @@ class CurrenciesModel(EssentialColumns):
     return CurrenciesModelValidation.model_validate(self)
 
 
+  def __str__(self) -> str:
+    return f"{self.name} ({self.code} - {self.symbol})"

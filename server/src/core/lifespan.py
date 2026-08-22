@@ -23,9 +23,11 @@ async def fastapi_lifespan(app: FastAPI):
 
     app.state.limiter = limiter
 
+
     logger.info("Database initialized")
     logger.info("Redis initialized")
     logger.info(f"The server run on: http://{settings.SERVER_HOST}:{settings.SERVER_PORT}")
+    logger.info("Admin initialize")
 
   except Exception as e:
     logger.error(f"Error during startup: {e}")
